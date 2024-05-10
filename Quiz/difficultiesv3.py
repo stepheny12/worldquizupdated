@@ -70,8 +70,7 @@ class Converter:
                                               text="Guess the Country",
                                               bg="#009900",
                                               fg=button_fg,
-                                              font=button_font, width=14,
-                                              command=self.open_easy_country_quiz)
+                                              font=button_font, width=14)
         self.to_guess_country_button.grid(row=0, column=1, padx=5, pady=5)
 
         # To history button command
@@ -84,6 +83,11 @@ class Converter:
                                         command=self.show_history)
 
         self.to_history_button.grid(row=2, column=0, columnspan=2, padx=5, pady=10)
+
+    def disable_buttons(self):
+        self.to_easy_flags_button.config(state=DISABLED)
+        self.to_medium_flags_button.config(state=DISABLED)
+        self.to_hard_flags_button.config(state=DISABLED)
 
     def difficulty_window(self):
 
@@ -234,25 +238,59 @@ class Converter:
         choices = q.get('choices')
         for i, choice_value in enumerate(choices):
             button = Button(self.flags_window, text=choice_value, width=20,
-                            command=lambda selected_choice=choice_value: check_answer(selected_choice))
+                            command=lambda selected_choice=choice_value: self.check_answer(selected_choice, q))
             button.grid(row=i // 2 + 2, column=i % 2, padx=5, pady=5)
 
-        # Checks if selected answer is right or wrong
-        def check_answer(selected_choice):
-            if selected_choice == q.get('answer'):
-                # Correct answer logic
-                print("Correct!")
-                self.correct_answers += 1  # Increment correct answer counter
+        # Text box for typing choices
+        self.choice_entry = Entry(self.flags_window)
+        self.choice_entry.grid(row=len(choices) // 2 + 3, columnspan=2, padx=10, pady=10)
+        self.choice_entry.bind("<KeyRelease>", lambda event: self.validate_choice_entry(event, choices, q))
 
-            else:
-                # Incorrect answer logic
-                print("Incorrect!")
+    def validate_choice_entry(self, event, choices, q):
+        entered_choice = self.choice_entry.get().strip().lower()
+        if entered_choice in ('a', 'b', 'c', 'd'):
+            for i, choice_value in enumerate(choices):
+                if entered_choice == chr(97 + i):
+                    self.check_answer(choice_value, q)
+                    break
+        else:
+            self.disable_buttons()
 
-            # Destroy current window
-            self.flags_window.destroy()
+    def check_answer(self, selected_choice, q):
+        if selected_choice == q.get('answer'):
+            # Correct answer logic
+            print("Correct!")
+            self.correct_answers += 1  # Increment correct answer counter
 
-            # Open next question or end quiz if all questions are answered
-            self.open_easy_flags_quiz()
+        else:
+            # Incorrect answer logic
+            print("Incorrect!")
+
+        # Destroy current window
+        self.flags_window.destroy()
+
+        # Open next question or end quiz if all questions are answered
+        self.open_easy_flags_quiz()
+
+    def open_medium_flags_quiz(self):
+        # Implementation similar to open_easy_flags_quiz with appropriate modifications
+        pass
+
+    def open_hard_flags_quiz(self):
+        # Implementation similar to open_easy_flags_quiz with appropriate modifications
+        pass
+
+    def show_history(self):
+        # Implementation similar to the original method
+        pass
+
+    def update_completed_quizzes(self, quiz_name, correct_answers, total_questions):
+        # Implementation similar to the original method
+        pass
+
+    def reset_quiz_state(self):
+        # Implementation similar to the original method
+        pass
 
     def open_medium_flags_quiz(self):
 
@@ -541,80 +579,6 @@ class Converter:
     def reset_quiz_state(self):
         self.correct_answers = 0
         self.asked_questions = []
-
-    def open_easy_country_quiz(self):
-
-        # List to keep track of asked questions
-        if not hasattr(self, 'asked_questions'):
-            self.asked_questions = []
-
-        quiz_data = [
-            {
-                "question": "What country is this",
-                "image": "./images/easycountries1.png",
-                "answer": "Mexico"
-            },
-
-        ]
-
-        # Check if there are still questions left
-        remaining_questions = [q for q in quiz_data if q not in self.asked_questions]
-        if not remaining_questions:
-            # Show total correct answers
-            messagebox.showinfo("Quiz Finished", f"Total Correct Answers: {self.correct_answers}/10")
-            # Update completed quizzes
-            self.update_completed_quizzes("Easy Countries Quiz", self.correct_answers, 10)
-            self.to_history_button.config(state=NORMAL)
-            self.reset_quiz_state()  # Reset quiz state
-            return
-
-        # Randomise the questions
-        q = random.choice(remaining_questions)
-
-        # Remove the selected question from quiz_data
-        self.asked_questions.append(q)
-
-        # Create a new window for the quiz
-        self.countries_window = Toplevel()
-        self.countries_window.title("Easy Countries Quiz")
-
-        # Add image
-        self.image_path = q.get('image')
-        if self.image_path:
-            self.img = PhotoImage(file=self.image_path)
-            self.image_label = Label(self.countries_window, image=self.img)
-            self.image_label.grid(row=0, columnspan=2, padx=10, pady=10)
-
-        # Add question
-        question_label = Label(self.countries_window, text=q.get('question'), font=("Arial", "14", "bold"))
-        question_label.grid(row=1, columnspan=2, padx=10, pady=10)
-
-        # Entry widget for user's answer
-        self.answer_entry = Entry(self.countries_window, width=30)
-        self.answer_entry.grid(row=2, columnspan=2, padx=10, pady=10)
-
-        # Checks if selected answer is right or wrong for countries quiz
-        def check_answer():
-            user_answer = self.answer_entry.get().strip().capitalize()  # Get user's answer
-            if user_answer == q.get('answer'):
-                # Correct answer logic
-                print("Correct!")
-                self.correct_answers += 1  # Increment correct answer counter
-
-            else:
-                # Incorrect answer logic
-                print("Incorrect!")
-
-            # Destroy current window
-            self.countries_window.destroy()
-
-            # Open next question or end quiz if all questions are answered
-            self.open_easy_country_quiz()
-
-        # Button to submit answer
-        submit_button = Button(self.countries_window, text="Submit", command=check_answer)
-        submit_button.grid(row=3, columnspan=2, padx=10, pady=10)
-
 
 
 # main routine

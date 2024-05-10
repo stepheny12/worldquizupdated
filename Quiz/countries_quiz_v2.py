@@ -1,7 +1,55 @@
 from tkinter import *
+import tkinter as tk
 import random
 from tkinter import messagebox
+from tkinter import Entry, Listbox, END
+from tkinter import ttk
 
+
+class AutocompleteEntry(Entry):
+    def __init__(self, *args, **kwargs):
+        Entry.__init__(self, *args, **kwargs)
+        self.var = self["textvariable"]
+        if self.var == '':
+            self.var = self["textvariable"] = StringVar()
+        self.var.trace('w', self.update)
+        self.choices = []
+        self.popup = None
+
+    def update(self, name, index, mode):
+        if not self.var.get():
+            if self.popup:
+                self.popup.destroy()
+                self.popup = None
+            return
+
+        words = self.comparison()
+        if words:
+            if not self.popup:
+                self.popup = Toplevel(self)
+                self.popup.geometry("+%d+%d" % (self.winfo_rootx(), self.winfo_rooty()))
+                self.popup.wm_overrideredirect(True)
+                self.popup.lift()
+                self.popup.focus_set()
+
+                self.popup.bind("<FocusOut>", lambda event: self.popup.destroy())
+
+                self.lb = Listbox(self.popup, width=self["width"])
+                self.lb.pack()
+
+            self.lb.delete(0, END)
+            for w in words:
+                self.lb.insert(END, w)
+            self.popup.geometry("+%d+%d" % (self.winfo_rootx(), self.winfo_rooty() + self.winfo_height()))
+        else:
+            if self.popup:
+                self.popup.destroy()
+                self.popup = None
+        self.var.set(self.var.get())
+
+    def comparison(self):
+        pattern = self.var.get().lower()
+        return [choice for choice in self.choices if pattern in choice.lower()]
 
 class Converter:
 
@@ -590,8 +638,52 @@ class Converter:
         question_label.grid(row=1, columnspan=2, padx=10, pady=10)
 
         # Entry widget for user's answer
-        self.answer_entry = Entry(self.countries_window, width=30)
+        self.answer_entry = AutocompleteEntry(self.countries_window, width=30)
         self.answer_entry.grid(row=2, columnspan=2, padx=10, pady=10)
+        self.answer_entry.choices = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda",
+                                     "Argentina", "Armenia",
+                                     "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh",
+                                     "Barbados", "Belarus", "Belgium",
+                                     "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana",
+                                     "Brazil", "Brunei", "Bulgaria",
+                                     "Burkina Faso", "Burundi", "Cabo Verde", "Cambodia", "Cameroon", "Canada",
+                                     "Central African Republic", "Chad",
+                                     "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba",
+                                     "Cyprus", "Czech Republic",
+                                     "Denmark", "Djibouti", "Dominica", "Dominican Republic", "East Timor", "Ecuador",
+                                     "Egypt", "El Salvador",
+                                     "Equatorial Guinea", "Eritrea", "Estonia", "Eswatini", "Ethiopia", "Fiji",
+                                     "Finland", "France", "Gabon", "Gambia",
+                                     "Georgia", "Germany", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea",
+                                     "Guinea-Bissau", "Guyana", "Haiti",
+                                     "Honduras", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland",
+                                     "Israel", "Italy", "Ivory Coast",
+                                     "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kosovo",
+                                     "Kuwait", "Kyrgyzstan", "Laos", "Latvia",
+                                     "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania",
+                                     "Luxembourg", "Madagascar", "Malawi",
+                                     "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania",
+                                     "Mauritius", "Mexico", "Micronesia",
+                                     "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar",
+                                     "Namibia", "Nauru", "Nepal",
+                                     "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea",
+                                     "North Macedonia", "Norway", "Oman",
+                                     "Pakistan", "Palau", "Palestine", "Panama", "Papua New Guinea", "Paraguay", "Peru",
+                                     "Philippines", "Poland",
+                                     "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis",
+                                     "Saint Lucia", "Saint Vincent and the Grenadines",
+                                     "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal",
+                                     "Serbia", "Seychelles", "Sierra Leone",
+                                     "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa",
+                                     "South Korea", "South Sudan", "Spain",
+                                     "Sri Lanka", "Sudan", "Suriname", "Sweden", "Switzerland", "Syria", "Taiwan",
+                                     "Tajikistan", "Tanzania", "Thailand",
+                                     "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan",
+                                     "Tuvalu", "Uganda", "Ukraine",
+                                     "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan",
+                                     "Vanuatu", "Vatican City",
+                                     "Venezuela", "Vietnam", "Yemen", "Zambia",
+                                     "Zimbabwe"]  # Add more country names as needed
 
         # Checks if selected answer is right or wrong for countries quiz
         def check_answer():
@@ -614,7 +706,6 @@ class Converter:
         # Button to submit answer
         submit_button = Button(self.countries_window, text="Submit", command=check_answer)
         submit_button.grid(row=3, columnspan=2, padx=10, pady=10)
-
 
 
 # main routine

@@ -85,10 +85,29 @@ class Converter:
 
         self.to_history_button.grid(row=2, column=0, columnspan=2, padx=5, pady=10)
 
+    def center_window(self, window):
+        if window:
+            # Get the width and height of the window
+            window.update_idletasks()  # Update the window to get correct size
+            window_width = window.winfo_width()
+            window_height = window.winfo_height()
+
+            # Calculate the position to center the window
+            screen_width = window.winfo_screenwidth()
+            screen_height = window.winfo_screenheight()
+            x = (screen_width // 2) - (window_width // 2)
+            y = (screen_height // 2) - (window_height // 2)
+
+            # Set the window's position
+            window.geometry(f"+{x}+{y}")
+
     def difficulty_window(self):
 
         self.difficulty_window = Toplevel()
         self.difficulty_window.title("Difficulty")
+
+        # Center the window
+        self.center_window(self.difficulty_window)
 
         difficulty_label = Label(self.difficulty_window, text="Choose your difficulty", font=("Arial", "16", "bold"))
         difficulty_label.grid(row=0, columnspan=2, padx=10, pady=10)
@@ -215,6 +234,9 @@ class Converter:
         # Create a new window for the quiz
         self.flags_window = Toplevel()
         self.flags_window.title("Easy Flags Quiz")
+
+        # Center the window
+        self.center_window(self.flags_window)
 
         # Gets rid of difficulty window
         self.difficulty_window.destroy()
@@ -344,6 +366,9 @@ class Converter:
         self.flags_window = Toplevel()
         self.flags_window.title("Medium Flags Quiz")
 
+        # Center the window
+        self.center_window(self.flags_window)
+
         # Gets rid of difficulty window
         self.difficulty_window.destroy()
 
@@ -471,6 +496,9 @@ class Converter:
         # Create a new window for the quiz
         self.flags_window = Toplevel()
         self.flags_window.title("Hard Flags Quiz")
+
+        # Center the window
+        self.center_window(self.flags_window)
 
         # Gets rid of difficulty window
         self.difficulty_window.destroy()
@@ -609,7 +637,7 @@ class Converter:
             self.countries_window.destroy()
 
             # Open next question or end quiz if all questions are answered
-            self.open_easy_country_quiz()
+            self.open_easy_countries_quiz()
 
         # Button to submit answer
         submit_button = Button(self.countries_window, text="Submit", command=check_answer)
