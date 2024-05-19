@@ -551,7 +551,7 @@ class Converter:
         quiz_data = [
             {
                 "question": "What country is this",
-                "image": "./images/easycountries1.png",
+                "image": "./images/countries1.png",
                 "answer": "Mexico"
             },
 
