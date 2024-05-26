@@ -1,10 +1,7 @@
 from tkinter import *
-import tkinter as tk
 import random
 from tkinter import messagebox
-from tkinter import Entry, Listbox, END
-from tkinter import ttk
-
+import datetime
 
 class AutocompleteEntry(Entry):
     def __init__(self, *args, **kwargs):
@@ -20,6 +17,7 @@ class AutocompleteEntry(Entry):
     def update(self, name, index, mode):
         self.comparison()
 
+    # getting the users input and showing related answers to it
     def comparison(self):
         pattern = self.var.get().lower()
         words = [choice for choice in self.choices if pattern in choice.lower()]
@@ -71,9 +69,12 @@ class Converter:
         self.flags_window = None
         self.correct_answers = 0  # Counter for correct answers
         self.completed_quizzes = []  # List to store completed quizzes
+        self.asked_questions = []  # List to store questions already asked
+        self.current_quiz_title = ""
+        self.validate_choice_entry_method = None
+        self.check_answer_method = None
 
         # common format for all buttons
-        # Arial size 14 bold, with white text
         button_font = ("Arial", "14", "bold")
         button_fg = "#FFFFFF"
         # Set up GUI Frame
@@ -187,330 +188,35 @@ class Converter:
                                            command=self.open_hard_flags_quiz)
         self.to_hard_flags_button.grid(row=0, column=2, padx=5, pady=5)
 
+    # sets the quiz to easy difficulty
     def open_easy_flags_quiz(self):
+        self.current_quiz_title = "Easy Flags Quiz"
+        self.validate_choice_entry_method = self.validate_choice_entry_easy
+        self.check_answer_method = self.check_answer_easy
+        self.open_flags_quiz()
 
-        # List to keep track of asked questions
-        if not hasattr(self, 'asked_questions'):
-            self.asked_questions = []
-
-        quiz_data = [
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/easyflag1.png",
-                "choices": ["Belgium", "Germany", "France", "Belguim"],
-                "answer": "Belgium"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/easyflag2.png",
-                "choices": ["China", "Turkey", "Japan", "Vietnam"],
-                "answer": "Vietnam"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/easyflag3.png",
-                "choices": ["Liberia", "Canada", "Cuba", "USA"],
-                "answer": "USA"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/easyflag4.png",
-                "choices": ["France", "Germany", "Spain", "Netherlands"],
-                "answer": "France"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/easyflag5.png",
-                "choices": ["England", "US", "UK", "Britain"],
-                "answer": "UK"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/easyflag6.png",
-                "choices": ["Finland", "Poland", "France", "Russia"],
-                "answer": "Russia"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/easyflag7.png",
-                "choices": ["Japan", "China", "Thailand", "South Korea"],
-                "answer": "Japan"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/easyflag8.png",
-                "choices": ["Ireland", "Italy", "France", "Ivory Coast"],
-                "answer": "Italy"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/easyflag9.png",
-                "choices": ["Australia", "New Zealand", "UK", "Austria"],
-                "answer": "Australia"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/easyflag10.png",
-                "choices": ["USA", "Mexico", "Canada", "Maple"],
-                "answer": "Canada"
-            },
-        ]
-
-        # Check if there are still questions left
-        remaining_questions = [q for q in quiz_data if q not in self.asked_questions]
-        if not remaining_questions:
-            # Show total correct answers
-            messagebox.showinfo("Quiz Finished", f"Total Correct Answers: {self.correct_answers}/10")
-            # Update completed quizzes
-            self.update_completed_quizzes("Easy Flags Quiz", self.correct_answers, 10)
-            self.to_history_button.config(state=NORMAL)
-            self.reset_quiz_state()  # Reset quiz state
-            return
-
-        # Randomise the questions
-        q = random.choice(remaining_questions)
-
-        # Remove the selected question from quiz_data
-        self.asked_questions.append(q)
-
-        # Create a new window for the quiz
-        self.flags_window = Toplevel()
-        self.flags_window.title("Easy Flags Quiz")
-
-        # Gets rid of difficulty window
-        self.difficulty_window.destroy()
-
-        # Add image
-        self.image_path = q.get('image')
-        if self.image_path:
-            self.img = PhotoImage(file=self.image_path)
-            self.image_label = Label(self.flags_window, image=self.img)
-            self.image_label.grid(row=0, columnspan=2, padx=10, pady=10)
-
-        # Add question
-        question_label = Label(self.flags_window, text=q.get('question'), font=("Arial", "14", "bold"))
-        question_label.grid(row=1, columnspan=2, padx=10, pady=10)
-
-        # Display choices as 2x2 buttons
-        choices = q.get('choices')
-        for i, choice_value in enumerate(choices):
-            button = Button(self.flags_window, text=choice_value, width=20,
-                            command=lambda selected_choice=choice_value: check_answer(selected_choice))
-            button.grid(row=i // 2 + 2, column=i % 2, padx=5, pady=5)
-
-        # Checks if selected answer is right or wrong
-        def check_answer(selected_choice):
-            if selected_choice == q.get('answer'):
-                # Correct answer logic
-                print("Correct!")
-                self.correct_answers += 1  # Increment correct answer counter
-
-            else:
-                # Incorrect answer logic
-                print("Incorrect!")
-
-            # Destroy current window
-            self.flags_window.destroy()
-
-            # Open next question or end quiz if all questions are answered
-            self.open_easy_flags_quiz()
-
+    # sets the quiz to medium difficulty
     def open_medium_flags_quiz(self):
+        self.current_quiz_title = "Medium Flags Quiz"
+        self.validate_choice_entry_method = self.validate_choice_entry_medium
+        self.check_answer_method = self.check_answer_medium
+        self.open_flags_quiz()
 
-        # List to keep track of asked questions
-        if not hasattr(self, 'asked_questions'):
-            self.asked_questions = []
-
-        quiz_data = [
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/mediumflag1.png",
-                "choices": ["India", "Pakistan", "Turkey", "Afghanistan"],
-                "answer": "Pakistan"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/mediumflag2.png",
-                "choices": ["Nigeria", "Chad", "Zimbabwe", "Niger"],
-                "answer": "Nigeria"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/mediumflag3.png",
-                "choices": ["Haiti", "Costa Rica", "Liberia", "Cuba"],
-                "answer": "Cuba"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/mediumflag4.png",
-                "choices": ["Poland", "Singapore", "Indonesia", "Ukraine"],
-                "answer": "Indonesia"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/mediumflag5.png",
-                "choices": ["Kenya", "Ethiopia", "Malawi", "Mozambique"],
-                "answer": "Kenya"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/mediumflag6.png",
-                "choices": ["England", "Egypt", "Syria", "Yemen"],
-                "answer": "Egypt"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/mediumflag7.png",
-                "choices": ["Slovakia", "Serbia", "Czech Republic", "France"],
-                "answer": "Czech Republic"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/mediumflag8.png",
-                "choices": ["Spain", "Argentina", "Brazil", "Portugal"],
-                "answer": "Portugal"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/mediumflag9.png",
-                "choices": ["Chile", "Peru", "Poland", "Singapore"],
-                "answer": "Peru"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/mediumflag10.png",
-                "choices": ["North Korea", "Belarus", "Morocco", "Thailand"],
-                "answer": "North Korea"
-            },
-        ]
-
-        # Check if there are still questions left
-        remaining_questions = [q for q in quiz_data if q not in self.asked_questions]
-        if not remaining_questions:
-            # Show total correct answers
-            messagebox.showinfo("Quiz Finished", f"Total Correct Answers: {self.correct_answers}/10")
-            # Update completed quizzes
-            self.update_completed_quizzes("Medium Flags Quiz", self.correct_answers, 10)
-            self.to_history_button.config(state=NORMAL)
-            self.reset_quiz_state()  # Reset quiz state
-            return
-
-        # Randomise the questions
-        q = random.choice(remaining_questions)
-
-        # Remove the selected question from quiz_data
-        self.asked_questions.append(q)
-
-        # Create a new window for the quiz
-        self.flags_window = Toplevel()
-        self.flags_window.title("Medium Flags Quiz")
-
-        # Gets rid of difficulty window
-        self.difficulty_window.destroy()
-
-        # Add image
-        self.image_path = q.get('image')
-        if self.image_path:
-            self.img = PhotoImage(file=self.image_path)
-            self.image_label = Label(self.flags_window, image=self.img)
-            self.image_label.grid(row=0, columnspan=2, padx=10, pady=10)
-
-        # Add question
-        question_label = Label(self.flags_window, text=q.get('question'), font=("Arial", "14", "bold"))
-        question_label.grid(row=1, columnspan=2, padx=10, pady=10)
-
-        # Display choices as 2x2 buttons
-        choices = q.get('choices')
-        for i, choice_value in enumerate(choices):
-            button = Button(self.flags_window, text=choice_value, width=20,
-                            command=lambda selected_choice=choice_value: check_answer(selected_choice))
-            button.grid(row=i // 2 + 2, column=i % 2, padx=5, pady=5)
-
-        # Checks if selected answer is right or wrong
-        def check_answer(selected_choice):
-            if selected_choice == q.get('answer'):
-                # Correct answer logic
-                print("Correct!")
-                self.correct_answers += 1  # Increment correct answer counter
-
-            else:
-                # Incorrect answer logic
-                print("Incorrect!")
-
-            # Destroy current window
-            self.flags_window.destroy()
-
-            # Open next question or end quiz if all questions are answered
-            self.open_medium_flags_quiz()
-
+    # sets the quiz to hard difficulty
     def open_hard_flags_quiz(self):
+        self.current_quiz_title = "Hard Flags Quiz"
+        self.validate_choice_entry_method = self.validate_choice_entry_hard
+        self.check_answer_method = self.check_answer_hard
+        self.open_flags_quiz()
 
-        # List to keep track of asked questions
-        if not hasattr(self, 'asked_questions'):
-            self.asked_questions = []
+    # main flag quiz layout
+    def open_flags_quiz(self):
+        quiz_title = self.current_quiz_title
+        validate_choice_entry_method = self.validate_choice_entry_method
+        check_answer_method = self.check_answer_method
 
-        quiz_data = [
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/hardflag1.png",
-                "choices": ["Bhutan", "Brunei", "Laos", "Singapore"],
-                "answer": "Bhutan"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/hardflag2.png",
-                "choices": ["Laos", "Cambodia", "Thailand", "Maldives"],
-                "answer": "Cambodia"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/hardflag3.png",
-                "choices": ["Libya", "Iran", "Syria", "Afghanistan"],
-                "answer": "Afghanistan"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/hardflag4.png",
-                "choices": ["Andorra", "Romania", "Moldova", "Chad"],
-                "answer": "Moldova"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/hardflag5.png",
-                "choices": ["Colombia", "Ethiopia", "Chad", "Romania"],
-                "answer": "Chad"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/hardflag6.png",
-                "choices": ["Guatemala", "Honduras", "El Salvador", "Nicaragua"],
-                "answer": "Guatemala"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/hardflag7.png",
-                "choices": ["French Guiana", "Guyana", "Suriname", "Bolivia"],
-                "answer": "Guyana"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/hardflag8.png",
-                "choices": ["Tajikistan", "Kyrgyzstan", "Azerbaijan", "Turkmenistan"],
-                "answer": "Azerbaijan"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/hardflag9.png",
-                "choices": ["San Marino", "Brunei", "Malta", "Vatican City"],
-                "answer": "Vatican City"
-            },
-            {
-                "question": "Which countries flag is this",
-                "image": "./images/hardflag10.png",
-                "choices": ["Trinidad and Tobago", "Barbados", "Grenada", "The Bahamas"],
-                "answer": "Barbados"
-            },
-        ]
+        # Define quiz data for each difficulty level here
+        quiz_data = self.get_quiz_data(quiz_title)
 
         # Check if there are still questions left
         remaining_questions = [q for q in quiz_data if q not in self.asked_questions]
@@ -518,12 +224,12 @@ class Converter:
             # Show total correct answers
             messagebox.showinfo("Quiz Finished", f"Total Correct Answers: {self.correct_answers}/10")
             # Update completed quizzes
-            self.update_completed_quizzes("Hard Flags Quiz", self.correct_answers, 10)
+            self.update_completed_quizzes(quiz_title, self.correct_answers, 10)
             self.to_history_button.config(state=NORMAL)
             self.reset_quiz_state()  # Reset quiz state
             return
 
-        # Randomise the questions
+        # Randomize the questions
         q = random.choice(remaining_questions)
 
         # Remove the selected question from quiz_data
@@ -531,7 +237,7 @@ class Converter:
 
         # Create a new window for the quiz
         self.flags_window = Toplevel()
-        self.flags_window.title("Hard Flags Quiz")
+        self.flags_window.title(quiz_title)
 
         # Gets rid of difficulty window
         self.difficulty_window.destroy()
@@ -547,61 +253,256 @@ class Converter:
         question_label = Label(self.flags_window, text=q.get('question'), font=("Arial", "14", "bold"))
         question_label.grid(row=1, columnspan=2, padx=10, pady=10)
 
-        # Display choices as 2x2 buttons
+        # Text box for typing choices
+        self.choice_entry = Entry(self.flags_window)
+        self.choice_entry.grid(row=2, columnspan=2, padx=10, pady=(5, 5))
+        self.choice_entry.bind("<KeyRelease>", lambda event: validate_choice_entry_method(event, q))
+
+        # Set focus to the entry box
+        self.choice_entry.focus_set()
+
+        # Error label
+        self.error_label = Label(self.flags_window, text="", font=("Arial", 9), fg="red")
+        self.error_label.grid(row=3, columnspan=2, padx=10, pady=(5, 5))
+
+        # Display choices as labels
         choices = q.get('choices')
         for i, choice_value in enumerate(choices):
-            button = Button(self.flags_window, text=choice_value, width=20,
-                            command=lambda selected_choice=choice_value: check_answer(selected_choice))
-            button.grid(row=i // 2 + 2, column=i % 2, padx=5, pady=5)
+            choice_label = Label(self.flags_window, text=choice_value, font=("Arial", 12))
+            choice_label.grid(row=i + 4, columnspan=2, padx=5, pady=5)
 
-        # Checks if selected answer is right or wrong
-        def check_answer(selected_choice):
-            if selected_choice == q.get('answer'):
-                # Correct answer logic
-                print("Correct!")
-                self.correct_answers += 1  # Increment correct answer counter
+    # data for quizzes
+    def get_quiz_data(self, quiz_title):
+        if quiz_title == "Easy Flags Quiz":
+            return [
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/easyflag1.png",
+                    "choices": ["A. Belgium", "B. Germany", "C. France", "D. Belgium"],
+                    "answer": "A. Belgium"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/easyflag2.png",
+                    "choices": ["A. China", "B. Turkey", "C. Japan", "D. Vietnam"],
+                    "answer": "D. Vietnam"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/easyflag3.png",
+                    "choices": ["A. Liberia", "B. Canada", "C. Cuba", "D. USA"],
+                    "answer": "D. USA"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/easyflag4.png",
+                    "choices": ["A. France", "B. Germany", "C. Spain", "D. Netherlands"],
+                    "answer": "A. France"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/easyflag5.png",
+                    "choices": ["A. England", "B. US", "C. UK", "D. Britain"],
+                    "answer": "C. UK"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/easyflag6.png",
+                    "choices": ["A. Finland", "B. Poland", "C. France", "D. Russia"],
+                    "answer": "D. Russia"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/easyflag7.png",
+                    "choices": ["A. Japan", "B. China", "C. Thailand", "D. South Korea"],
+                    "answer": "A. Japan"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/easyflag8.png",
+                    "choices": ["A. Ireland", "B. Italy", "C. France", "D. Ivory Coast"],
+                    "answer": "B. Italy"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/easyflag9.png",
+                    "choices": ["A. Australia", "B. New Zealand", "C. UK", "D. Austria"],
+                    "answer": "A. Australia"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/easyflag10.png",
+                    "choices": ["A. USA", "B. Mexico", "C. Canada", "D. Maple"],
+                    "answer": "C. Canada"
+                }
+            ]
+        elif quiz_title == "Medium Flags Quiz":
+            return [
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/mediumflag1.png",
+                    "choices": ["A. India", "B. Pakistan", "C. Turkey", "D. Afghanistan"],
+                    "answer": "B. Pakistan"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/mediumflag2.png",
+                    "choices": ["A. Nigeria", "B. Chad", "C. Zimbabwe", "D. Niger"],
+                    "answer": "A. Nigeria"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/mediumflag3.png",
+                    "choices": ["A. Haiti", "B. Costa Rica", "C. Liberia", "D. Cuba"],
+                    "answer": "D. Cuba"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/mediumflag4.png",
+                    "choices": ["A. Poland", "B. Singapore", "C. Indonesia", "D. Ukraine"],
+                    "answer": "C. Indonesia"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/mediumflag5.png",
+                    "choices": ["A. Kenya", "B. Ethiopia", "C. Malawi", "D. Mozambique"],
+                    "answer": "A. Kenya"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/mediumflag6.png",
+                    "choices": ["A. England", "B. Egypt", "C. Syria", "D. Yemen"],
+                    "answer": "B. Egypt"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/mediumflag7.png",
+                    "choices": ["A. Slovakia", "B. Serbia", "C. Czech Republic", "D. France"],
+                    "answer": "C. Czech Republic"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/mediumflag8.png",
+                    "choices": ["A. Spain", "B. Argentina", "C. Brazil", "D. Portugal"],
+                    "answer": "D. Portugal"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/mediumflag9.png",
+                    "choices": ["A. Chile", "B. Peru", "C. Poland", "D. Singapore"],
+                    "answer": "B. Peru"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/mediumflag10.png",
+                    "choices": ["A. North Korea", "B. Belarus", "C. Morocco", "D. Thailand"],
+                    "answer": "A. North Korea"
+                }
+            ]
+        elif quiz_title == "Hard Flags Quiz":
+            return [
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/hardflag1.png",
+                    "choices": ["A. Bhutan", "B. Brunei", "C. Laos", "D. Singapore"],
+                    "answer": "A. Bhutan"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/hardflag2.png",
+                    "choices": ["A. Laos", "B. Cambodia", "C. Thailand", "D. Maldives"],
+                    "answer": "B. Cambodia"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/hardflag3.png",
+                    "choices": ["A. Libya", "B. Iran", "C. Syria", "D. Afghanistan"],
+                    "answer": "D. Afghanistan"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/hardflag4.png",
+                    "choices": ["A. Andorra", "B. Romania", "C. Moldova", "D. Chad"],
+                    "answer": "C. Moldova"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/hardflag5.png",
+                    "choices": ["A. Colombia", "B. Ethiopia", "C. Chad", "D. Romania"],
+                    "answer": "C. Chad"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/hardflag6.png",
+                    "choices": ["A. Guatemala", "B. Honduras", "C. El Salvador", "D. Nicaragua"],
+                    "answer": "A. Guatemala"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/hardflag7.png",
+                    "choices": ["A. French Guiana", "B. Guyana", "C. Suriname", "D. Bolivia"],
+                    "answer": "B. Guyana"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/hardflag8.png",
+                    "choices": ["A. Tajikistan", "B. Kyrgyzstan", "C. Azerbaijan", "D. Turkmenistan"],
+                    "answer": "C. Azerbaijan"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/hardflag9.png",
+                    "choices": ["A. San Marino", "B. Brunei", "C. Malta", "D. Vatican City"],
+                    "answer": "D. Vatican City"
+                },
+                {
+                    "question": "Which country's flag is this",
+                    "image": "./images/hardflag10.png",
+                    "choices": ["A. Trinidad and Tobago", "B. Barbados", "C. Grenada", "D. The Bahamas"],
+                    "answer": "B. Barbados"
+                }
+            ]
 
-            else:
-                # Incorrect answer logic
-                print("Incorrect!")
+    def validate_choice_entry_easy(self, event, q):
+        selected_choice = self.choice_entry.get().lower()
+        if selected_choice in ['a', 'b', 'c', 'd']:
+            self.check_answer_method(selected_choice, q)
+        else:
+            self.error_label.config(text="Invalid choice. Please enter a, b, c, or d.")
 
-            # Destroy current window
-            self.flags_window.destroy()
+    def validate_choice_entry_medium(self, event, q):
+        selected_choice = self.choice_entry.get().lower()
+        if selected_choice in ['a', 'b', 'c', 'd']:
+            self.check_answer_method(selected_choice, q)
+        else:
+            self.error_label.config(text="Invalid choice. Please enter a, b, c, or d.")
 
-            # Open next question or end quiz if all questions are answered
-            self.open_hard_flags_quiz()
+    def validate_choice_entry_hard(self, event, q):
+        selected_choice = self.choice_entry.get().lower()
+        if selected_choice in ['a', 'b', 'c', 'd']:
+            self.check_answer_method(selected_choice, q)
+        else:
+            self.error_label.config(text="Invalid choice. Please enter a, b, c, or d.")
 
-    def show_history(self):
-        if not self.completed_quizzes:
-            messagebox.showinfo("History", "No quizzes completed yet!")
-            return
+    def check_answer_easy(self, selected_choice, q):
+        self.check_answer_generic(selected_choice, q)
 
-        history_window = Toplevel()
-        history_window.title("Quiz History")
+    def check_answer_medium(self, selected_choice, q):
+        self.check_answer_generic(selected_choice, q)
 
-        history_label = Label(history_window, text="Quiz History", font=("Arial", "16", "bold"))
-        history_label.grid(row=0, columnspan=2, padx=10, pady=10)
+    def check_answer_hard(self, selected_choice, q):
+        self.check_answer_generic(selected_choice, q)
 
-        # Display completed quizzes and results
-        for idx, quiz_result in enumerate(self.completed_quizzes, start=1):
-            quiz_name = quiz_result["quiz_name"]
-            correct_answers = quiz_result["correct_answers"]
-            total_questions = quiz_result["total_questions"]
-
-            quiz_info_label = Label(history_window, text=f"Quiz {idx}: {quiz_name}, "
-                                                         f"Correct Answers: {correct_answers}/{total_questions}")
-            quiz_info_label.grid(row=idx, columnspan=2, padx=10, pady=5)
-
-    def update_completed_quizzes(self, quiz_name, correct_answers, total_questions):
-        self.completed_quizzes.append({
-            "quiz_name": quiz_name,
-            "correct_answers": correct_answers,
-            "total_questions": total_questions
-        })
-
-    def reset_quiz_state(self):
-        self.correct_answers = 0
-        self.asked_questions = []
+    def check_answer_generic(self, selected_choice, q):
+        # Get the first character of the answer (which is the letter)
+        correct_answer_letter = q.get('answer')[0].lower()
+        if selected_choice == correct_answer_letter:
+            print("Correct!")
+            self.correct_answers += 1
+        else:
+            print("Incorrect!")
+        self.flags_window.destroy()
+        self.open_flags_quiz()
 
     def open_country_quiz(self):
 
@@ -651,10 +552,14 @@ class Converter:
             },
             {
                 "question": "What country is this",
+                "image": "./images/countries9.png",
+                "answer": "Germany"
+            },
+            {
+                "question": "What country is this",
                 "image": "./images/countries10.png",
                 "answer": "Ukraine"
             },
-
 
         ]
 
@@ -737,7 +642,7 @@ class Converter:
                                      "Vanuatu", "Vatican City",
                                      "Venezuela", "Vietnam", "Yemen", "Zambia",
                                      "Zimbabwe"]  # Country List
-
+        # Checks whether the country answer is correct, incorrect or invalid
         def check_country_answer():
             user_answer = self.answer_entry.get().strip().capitalize()  # Get user's answer and capitalize it
             if user_answer.lower() in [country.lower() for country in self.answer_entry.choices]:
@@ -764,6 +669,63 @@ class Converter:
         # Button to submit answer
         submit_button = Button(self.countries_window, text="Submit", command=check_country_answer)
         submit_button.grid(row=3, columnspan=2, padx=10, pady=10)
+
+    # updates the quizzes completed for the history
+    def update_completed_quizzes(self, quiz_name, correct_answers, total_questions):
+        print(f"Quiz completed: {quiz_name}, Correct Answers: {correct_answers}/{total_questions}")
+        self.completed_quizzes.append({
+            "quiz_name": quiz_name,
+            "correct_answers": correct_answers,
+            "total_questions": total_questions
+        })
+
+    # resets the quizzes after completion
+    def reset_quiz_state(self):
+        self.correct_answers = 0
+        self.asked_questions = []
+
+    def show_history(self):
+        if not self.completed_quizzes:
+            messagebox.showinfo("History", "No quizzes completed yet!")
+            return
+
+        history_window = Toplevel()
+        history_window.title("Quiz History")
+
+        history_label = Label(history_window, text="Quiz History", font=("Arial", "16", "bold"))
+        history_label.grid(row=0, columnspan=2, padx=10, pady=10)
+
+        # Display completed quizzes and results
+        for idx, quiz_result in enumerate(self.completed_quizzes, start=1):
+            quiz_name = quiz_result["quiz_name"]
+            correct_answers = quiz_result["correct_answers"]
+            total_questions = quiz_result["total_questions"]
+
+            quiz_info_label = Label(history_window, text=f"Quiz {idx}: {quiz_name}, "
+                                                         f"Correct Answers: {correct_answers}/{total_questions}")
+            quiz_info_label.grid(row=idx, columnspan=2, padx=10, pady=5)
+
+            # Add export button
+        export_button = Button(history_window, text="Export History", command=self.export_history)
+        export_button.grid(row=len(self.completed_quizzes) + 1, columnspan=2, padx=10, pady=10)
+
+    def export_history(self):
+        try:
+            # Generate a unique filename using the current date and time
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"quiz_history_{timestamp}.txt"
+
+            with open(filename, "w") as file:
+                for idx, quiz_result in enumerate(self.completed_quizzes, start=1):
+                    quiz_name = quiz_result["quiz_name"]
+                    correct_answers = quiz_result["correct_answers"]
+                    total_questions = quiz_result["total_questions"]
+                    file.write(f"Quiz {idx}: {quiz_name}\n")
+                    file.write(f"Correct Answers: {correct_answers}/{total_questions}\n")
+                    file.write("\n")
+            messagebox.showinfo("Export Successful", f"Quiz history has been exported to {filename}")
+        except Exception as e:
+            messagebox.showerror("Export Failed", f"An error occurred: {e}")
 
 
 # main routine
