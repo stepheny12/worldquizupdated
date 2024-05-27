@@ -211,6 +211,10 @@ class Converter:
 
     # main flag quiz layout
     def open_flags_quiz(self):
+
+        # Get the position of the main window
+        root_x, root_y = self.temp_frame.winfo_rootx(), self.temp_frame.winfo_rooty()
+
         quiz_title = self.current_quiz_title
         validate_choice_entry_method = self.validate_choice_entry_method
         check_answer_method = self.check_answer_method
@@ -238,6 +242,11 @@ class Converter:
         # Create a new window for the quiz
         self.flags_window = Toplevel()
         self.flags_window.title(quiz_title)
+
+        # Position the new window relative to the main window
+        main_window_x = self.temp_frame.winfo_rootx()
+        main_window_y = self.temp_frame.winfo_rooty()
+        self.flags_window.geometry(f"+{main_window_x}+{main_window_y}")
 
         # Gets rid of difficulty window
         self.difficulty_window.destroy()
@@ -293,13 +302,13 @@ class Converter:
                 {
                     "question": "Which country's flag is this",
                     "image": "./images/easyflag1.png",
-                    "choices": ["A. Belgium", "B. Germany", "C. France", "D. Belgium"],
+                    "choices": ["A. Belgium", "B. Germany", "C. France", "D. Poland"],
                     "answer": "A. Belgium"
                 },
                 {
                     "question": "Which country's flag is this",
                     "image": "./images/easyflag2.png",
-                    "choices": ["A. China", "B. Turkey", "C. Japan", "D. Vietnam"],
+                    "choices": ["A. China", "B. Turkey", "C. Jbapan", "D. Vietnam"],
                     "answer": "D. Vietnam"
                 },
                 {
@@ -520,6 +529,8 @@ class Converter:
         self.next_question_button.config(state=NORMAL)  # Enable next question button
 
     def open_country_quiz(self):
+        # Get the position of the main window
+        root_x, root_y = self.temp_frame.winfo_rootx(), self.temp_frame.winfo_rooty()
 
         # List to keep track of asked questions
         if not hasattr(self, 'asked_questions'):
@@ -597,7 +608,12 @@ class Converter:
 
         # Create a new window for the quiz
         self.countries_window = Toplevel()
-        self.countries_window.title("Easy Countries Quiz")
+        self.countries_window.title("Countries Quiz")
+
+        # Position the new window relative to the main window
+        main_window_x = self.temp_frame.winfo_rootx()
+        main_window_y = self.temp_frame.winfo_rooty()
+        self.countries_window.geometry(f"+{main_window_x}+{main_window_y}")
 
         # Add image
         self.image_path = q.get('image')
